@@ -12,7 +12,6 @@ import { Check, Copy } from "lucide-react";
 import { cn } from "../lib/utils";
 import axios from "axios";
 import moment from "moment";
-const BASE_URL = process.env.BACKEND_URL || "http://127.0.0.1:8787";
 const Body = () => {
   const [screenSize, getDimension] = useState({
     dynamicWidth: window.innerWidth,
@@ -62,6 +61,7 @@ const SingleComponent = () => {
   const [desc, setDesc] = useState("");
   const [res, setRes] = useState<any>({});
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const BASE_URL = process.env.BACKEND_URL || "http://127.0.0.1:8787";
 
   const getdata = async () => {
     if (title.trim().length === 0) return;
