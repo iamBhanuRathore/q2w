@@ -1,6 +1,15 @@
 import { Hono } from "hono";
 import { prisma } from "../config/db";
+import { cors } from "hono/cors";
 const app = new Hono();
+app.use(
+  "/*",
+  cors({
+    origin: "*",
+    allowMethods: ["POST", "GET", "OPTIONS"],
+    maxAge: 600,
+  })
+);
 app.get("/", (c) => {
   return c.json({
     message: "Health route is Working !",
