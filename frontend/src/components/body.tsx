@@ -61,14 +61,13 @@ const SingleComponent = () => {
   const [desc, setDesc] = useState("");
   const [res, setRes] = useState<any>({});
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const BASE_URL = process.env.BACKEND_URL;
 
   const getdata = async () => {
     if (title.trim().length === 0) return;
     setLoading(true);
     try {
       const { data } = await axios.get(
-        `${BASE_URL}/getdata?title=${title.trim()}`
+        `https://backend.q2w.workers.dev/getdata?title=${title.trim()}`
       );
       setDesc(data.roomData.description);
       setRes(data.roomData);
@@ -88,7 +87,7 @@ const SingleComponent = () => {
       const formdata = new FormData();
       formdata.set("title", title);
       formdata.set("description", desc);
-      await axios.post(`${BASE_URL}/postdata`, formdata, {
+      await axios.post(`https://backend.q2w.workers.dev/postdata`, formdata, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
