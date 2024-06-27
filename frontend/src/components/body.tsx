@@ -61,7 +61,7 @@ const SingleComponent = () => {
   const [desc, setDesc] = useState("");
   const [res, setRes] = useState<any>({});
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const BASE_URL = process.env.BACKEND_URL || "http://127.0.0.1:8787";
+  const BASE_URL = process.env.BACKEND_URL;
 
   const getdata = async () => {
     if (title.trim().length === 0) return;
