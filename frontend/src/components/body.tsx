@@ -12,8 +12,7 @@ import { Check, Copy } from "lucide-react";
 import { cn } from "../lib/utils";
 import axios from "axios";
 import moment from "moment";
-// const BASE_URL = "http://127.0.0.1:8787";
-const BASE_URL = "https://backend.q2w.workers.dev";
+const BASE_URL = process.env.BACKEND_URL || "http://127.0.0.1:8787"; //"https://backend.q2w.workers.dev";
 const Body = () => {
   const [screenSize, getDimension] = useState({
     dynamicWidth: window.innerWidth,
@@ -61,7 +60,7 @@ const SingleComponent = () => {
   const [title, setTitle] = useState("");
   const [loading, setLoading] = useState(false);
   const [desc, setDesc] = useState("");
-  const [res, setRes] = useState({});
+  const [res, setRes] = useState<any>({});
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const getdata = async () => {
