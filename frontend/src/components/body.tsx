@@ -12,7 +12,7 @@ import { Check, Copy } from "lucide-react";
 import { cn } from "../lib/utils";
 import axios from "axios";
 import moment from "moment";
-const BASE_URL = process.env.BACKEND_URL || "http://127.0.0.1:8787"; //"https://backend.q2w.workers.dev";
+const BASE_URL = process.env.BACKEND_URL || "http://127.0.0.1:8787";
 const Body = () => {
   const [screenSize, getDimension] = useState({
     dynamicWidth: window.innerWidth,
