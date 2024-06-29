@@ -8,7 +8,7 @@ import {
 import { ModeToggle } from "./header";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "./ui/button";
-import { Check, Copy } from "lucide-react";
+import { Check, Copy, Github } from "lucide-react";
 import { cn } from "../lib/utils";
 import axios from "axios";
 import moment from "moment";
@@ -43,11 +43,14 @@ const Body = () => {
         <ResizablePanel defaultSize={isMobile ? 100 : 50}>
           <SingleComponent />
         </ResizablePanel>
-        <ResizableHandle className="relative" />
+        <ResizableHandle className="relative"></ResizableHandle>
         <ResizablePanel defaultSize={isMobile ? 0 : 50}>
           <SingleComponent />
         </ResizablePanel>
       </ResizablePanelGroup>
+      <a target="_blank" href="https://github.com/iamBhanuRathore/q2w">
+        <Github className="absolute cursor-pointer h-10 w-10 bottom-20 right-5 border-2 p-1.5 rounded-md" />
+      </a>
       <ModeToggle className="absolute bottom-5 right-5" />
     </>
   );
@@ -71,7 +74,7 @@ const SingleComponent = () => {
       );
       setDesc(data.roomData.description);
       setRes(data.roomData);
-      console.log(data);
+      // console.log(data);
       textareaRef.current?.focus(); // Focus the textarea after getting data
     } catch (error: any) {
       alert("Error" + (error.response?.data?.message || error.message));
@@ -80,7 +83,13 @@ const SingleComponent = () => {
     }
   };
   const postData = async () => {
-    if (desc.trim().length === 0 || title.trim().length === 0) return;
+    if (
+      desc.trim().length === 0
+      // || title.trim().length === 0
+      // || title.trim() === res.title
+    )
+      return;
+    console.log(res.title, title);
     setLoading(true);
     // types: multipart/form-data, application/x-www-form-urlencoded
     try {
@@ -108,7 +117,10 @@ const SingleComponent = () => {
         <div className="flex gap-x-2 items-center">
           <CopyButtonWrapper copyValue={title} className="w-4 h-4 right-2">
             <Input
-              onBlur={getdata}
+              onBlur={() => {
+                if (title.trim() === res.title) return;
+                getdata();
+              }}
               disabled={loading}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={(e) => {
@@ -121,19 +133,25 @@ const SingleComponent = () => {
               placeholder="Enter the Room Id"
             />
           </CopyButtonWrapper>
-          <Button disabled={loading} onClick={getdata} className="h-fit">
+          <Button
+            disabled={loading}
+            onClick={getdata}
+            className="h-fit dark:text-gray-200">
             Search
           </Button>
         </div>
-        <CopyButtonWrapper copyValue={desc} className="w-4 h-4 right-3 top-6">
+        <CopyButtonWrapper copyValue={desc} className="w-4 h-4 right-4 top-6">
           <Textarea
             disabled={loading}
             value={desc}
-            onBlur={postData}
+            onBlur={() => {
+              if (desc.trim() === res.description) return;
+              postData();
+            }}
             onChange={(e) => setDesc(e.target.value)}
             onKeyDown={(e) => {
               console.log(e.key);
-              if (e.key === "Enter" && e.shiftKey) {
+              if (e.key === "Enter" && e.ctrlKey) {
                 e.preventDefault(); // Prevent the default Enter key behavior (new line)
                 postData(); // Call the postData function
               }
@@ -144,10 +162,12 @@ const SingleComponent = () => {
           />
         </CopyButtonWrapper>
       </div>
-      <p className="text-xs text-gray-300 py-1">
-        Last Modified:&nbsp;
-        {moment(res?.updatedAt).format("DD-MMM-YYYY hh:mm:ss")}
-      </p>
+      <div>
+        <p className="text-xs text-gray-300 py-1">
+          Last Modified:&nbsp;
+          {moment(res?.updatedAt).format("DD-MMM-YYYY hh:mm:ss")}
+        </p>
+      </div>
     </div>
   );
 };
@@ -171,7 +191,7 @@ const CopyButtonWrapper = ({
     }
   }, [clicked]);
   return (
-    <div className="w-full h-full relative">
+    <div className="w-full h-full relative cursor-pointer ">
       {children}
       {clicked ? (
         <Check
