@@ -84,8 +84,8 @@ const SingleComponent = () => {
   };
   const postData = async () => {
     if (
-      desc.trim().length === 0
-      // || title.trim().length === 0
+      desc.trim().length === 0 ||
+      title.trim().length === 0
       // || title.trim() === res.title
     )
       return;
