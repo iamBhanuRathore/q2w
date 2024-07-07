@@ -12,6 +12,8 @@ import { Check, Copy, Github } from "lucide-react";
 import { cn } from "../lib/utils";
 import axios from "axios";
 import moment from "moment";
+let URL = "http://127.0.0.1:8787";
+// let URL = "https://backend.q2w.workers.dev";
 const Body = () => {
   const [screenSize, getDimension] = useState({
     dynamicWidth: window.innerWidth,
@@ -33,7 +35,7 @@ const Body = () => {
   }, [screenSize]);
 
   const isMobile = screenSize.dynamicWidth < 756;
-  console.log(screenSize);
+  // console.log(screenSize);
 
   return (
     <>
@@ -41,11 +43,11 @@ const Body = () => {
         direction={isMobile ? "vertical" : "horizontal"}
         className="rounded-lg border">
         <ResizablePanel defaultSize={isMobile ? 100 : 50}>
-          <SingleComponent />
+          <SingleComponent key={1} id={1} />
         </ResizablePanel>
-        <ResizableHandle className="relative"></ResizableHandle>
+        <ResizableHandle className="relative" />
         <ResizablePanel defaultSize={isMobile ? 0 : 50}>
-          <SingleComponent />
+          <SingleComponent key={2} id={2} />
         </ResizablePanel>
       </ResizablePanelGroup>
       <a target="_blank" href="https://github.com/iamBhanuRathore/q2w">
@@ -58,8 +60,13 @@ const Body = () => {
 
 export default Body;
 
-const SingleComponent = () => {
-  const [title, setTitle] = useState("");
+const SingleComponent = ({ id }: { id: number }) => {
+  let cachedTitle = localStorage.getItem("title" + id);
+  if (!cachedTitle || cachedTitle.length > 50) {
+    cachedTitle = "";
+  }
+  // console.log(cachedTitle);
+  const [title, setTitle] = useState(cachedTitle);
   const [loading, setLoading] = useState(false);
   const [desc, setDesc] = useState("");
   const [res, setRes] = useState<any>({});
@@ -69,13 +76,11 @@ const SingleComponent = () => {
     if (title.trim().length === 0) return;
     setLoading(true);
     try {
-      const { data } = await axios.get(
-        `https://backend.q2w.workers.dev/getdata?title=${title.trim()}`
-      );
+      const { data } = await axios.get(`${URL}/getdata?title=${title.trim()}`);
+      localStorage.setItem("title" + id, title.trim());
       setDesc(data.roomData.description);
+
       setRes(data.roomData);
-      // console.log(data);
-      textareaRef.current?.focus(); // Focus the textarea after getting data
     } catch (error: any) {
       alert("Error" + (error.response?.data?.message || error.message));
     } finally {
@@ -83,24 +88,19 @@ const SingleComponent = () => {
     }
   };
   const postData = async () => {
-    if (
-      desc.trim().length === 0 ||
-      title.trim().length === 0
-      // || title.trim() === res.title
-    )
-      return;
-    console.log(res.title, title);
+    if (desc.trim().length === 0 || title.trim().length === 0) return;
     setLoading(true);
-    // types: multipart/form-data, application/x-www-form-urlencoded
     try {
       const formdata = new FormData();
       formdata.set("title", title);
       formdata.set("description", desc);
-      await axios.post(`https://backend.q2w.workers.dev/postdata`, formdata, {
+      const { data } = await axios.post(`${URL}/postdata`, formdata, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
       });
+      setRes(data.data);
+      setDesc(data.data.description);
     } catch (error: any) {
       alert("Error" + (error.response?.data?.message || error.message));
     } finally {
@@ -117,15 +117,17 @@ const SingleComponent = () => {
         <div className="flex gap-x-2 items-center">
           <CopyButtonWrapper copyValue={title} className="w-4 h-4 right-2">
             <Input
-              onBlur={() => {
+              value={title}
+              onBlur={async () => {
                 if (title.trim() === res.title) return;
-                getdata();
+                await getdata();
+                textareaRef.current?.focus(); // Focus the textarea after getting data
               }}
               disabled={loading}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
-                  getdata();
+                  // getdata();  No need call the getData api because we are already calling the api onBlur
                   textareaRef.current?.focus(); // Focus the textarea when Enter is pressed
                 }
               }}
@@ -145,12 +147,11 @@ const SingleComponent = () => {
             disabled={loading}
             value={desc}
             onBlur={() => {
-              if (desc.trim() === res.description) return;
+              if (desc === res.description) return;
               postData();
             }}
             onChange={(e) => setDesc(e.target.value)}
             onKeyDown={(e) => {
-              console.log(e.key);
               if (e.key === "Enter" && e.ctrlKey) {
                 e.preventDefault(); // Prevent the default Enter key behavior (new line)
                 postData(); // Call the postData function
