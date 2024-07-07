@@ -12,8 +12,8 @@ import { Check, Copy, Github } from "lucide-react";
 import { cn } from "../lib/utils";
 import axios from "axios";
 import moment from "moment";
-let URL = "http://127.0.0.1:8787";
-// let URL = "https://backend.q2w.workers.dev";
+// let URL = "http://127.0.0.1:8787";
+let URL = "https://backend.q2w.workers.dev";
 const Body = () => {
   const [screenSize, getDimension] = useState({
     dynamicWidth: window.innerWidth,
