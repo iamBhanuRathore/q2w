@@ -65,26 +65,30 @@ const SingleComponent = ({ id }: { id: number }) => {
   if (!cachedTitle || cachedTitle.length > 50) {
     cachedTitle = "";
   }
-  // console.log(cachedTitle);
   const [title, setTitle] = useState(cachedTitle);
   const [loading, setLoading] = useState(false);
   const [desc, setDesc] = useState("");
   const [res, setRes] = useState<any>({});
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const getdata = async () => {
+  const getdata = async (shouldFocus?: boolean) => {
+    // shouldFocus -- the text area
     if (title.trim().length === 0) return;
     setLoading(true);
     try {
       const { data } = await axios.get(`${URL}/getdata?title=${title.trim()}`);
       localStorage.setItem("title" + id, title.trim());
       setDesc(data.roomData.description);
-
       setRes(data.roomData);
     } catch (error: any) {
       alert("Error" + (error.response?.data?.message || error.message));
     } finally {
       setLoading(false);
+      if (shouldFocus) {
+        setTimeout(() => {
+          textareaRef.current?.focus(); // Focus the textarea after getting data
+        }, 0);
+      }
     }
   };
   const postData = async () => {
@@ -120,15 +124,14 @@ const SingleComponent = ({ id }: { id: number }) => {
               value={title}
               onBlur={async () => {
                 if (title.trim() === res.title) return;
-                await getdata();
-                textareaRef.current?.focus(); // Focus the textarea after getting data
+                await getdata(true);
               }}
               disabled={loading}
               onChange={(e) => setTitle(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter") {
                   // getdata();  No need call the getData api because we are already calling the api onBlur
-                  textareaRef.current?.focus(); // Focus the textarea when Enter is pressed
+                  e.currentTarget.blur();
                 }
               }}
               className="border-[1px] border-gray-400"
@@ -137,13 +140,14 @@ const SingleComponent = ({ id }: { id: number }) => {
           </CopyButtonWrapper>
           <Button
             disabled={loading}
-            onClick={getdata}
+            onClick={() => getdata(true)}
             className="h-fit dark:text-gray-200">
             Search
           </Button>
         </div>
         <CopyButtonWrapper copyValue={desc} className="w-4 h-4 right-4 top-6">
           <Textarea
+            ref={textareaRef} // Set the ref to the textarea
             disabled={loading}
             value={desc}
             onBlur={() => {
@@ -157,7 +161,6 @@ const SingleComponent = ({ id }: { id: number }) => {
                 postData(); // Call the postData function
               }
             }}
-            ref={textareaRef} // Set the ref to the textarea
             className="border-[1px] border-gray-400 h-full overflow-x-auto"
             placeholder="Room Data will Display here"
           />
