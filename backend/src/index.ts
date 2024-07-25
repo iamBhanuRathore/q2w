@@ -19,7 +19,10 @@ app.get("/", (c) => {
 app.get("/getdata", async (c) => {
   try {
     const query = c.req.query();
+    let startTime = performance.now();
+
     const db = prisma(c);
+    let dbConnected = performance.now();
     const { title } = query;
     if (!query || !title) {
       return c.json({
@@ -32,11 +35,17 @@ app.get("/getdata", async (c) => {
         title: title,
       },
     });
+    let findTime = performance.now();
     if (roomData) {
       return c.json({
         message: "Already in database",
         roomData,
         success: true,
+        time: {
+          total: findTime - startTime,
+          dbConnected: dbConnected - startTime,
+          findTime: findTime - dbConnected,
+        },
       });
     }
     roomData = await db.object.create({
@@ -45,7 +54,18 @@ app.get("/getdata", async (c) => {
         description: "",
       },
     });
-    return c.json({ message: "New Room Created", roomData, success: true });
+    let endTime = performance.now();
+    return c.json({
+      message: "New Room Created",
+      roomData,
+      success: true,
+      time: {
+        total: endTime - startTime,
+        dbConnected: dbConnected - startTime,
+        findTime: findTime - dbConnected,
+        updateTime: endTime - findTime,
+      },
+    });
   } catch (error: any) {
     console.log("Something went wrong");
     return c.json({
@@ -65,7 +85,13 @@ app.post("/postdata", async (c) => {
       c.status(400);
       return c.json({ success: false, message: "No Inputs provided" });
     }
+
+    let startTime = performance.now();
+
     const db = prisma(c);
+
+    let dbConnected = performance.now();
+
     const object = await db.object.update({
       where: {
         title,
@@ -74,7 +100,9 @@ app.post("/postdata", async (c) => {
         description,
       },
     });
-    console.log(object);
+
+    let endTime = performance.now();
+
     if (!object) {
       c.status(400);
       return c.json({
@@ -86,6 +114,11 @@ app.post("/postdata", async (c) => {
       message: "Object Found",
       success: true,
       data: object,
+      time: {
+        total: endTime - startTime,
+        dbConnected: dbConnected - startTime,
+        updateTime: endTime - dbConnected,
+      },
     });
   } catch (error: any) {
     c.status(500);
